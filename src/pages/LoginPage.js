@@ -16,6 +16,7 @@ export default function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const [isLoading, setIsLoading] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -30,10 +31,14 @@ export default function LoginPage() {
 
   const onSubmit = (data) => {
     const { email, password } = data;
+    setIsLoading(true);
     login(email, password)
       .then(() => navigate(state?.path || "/"))
       .catch((error) => {
         switch (error.code) {
+          case "auth/network-request-failed":
+            alert("網路連線失敗，請確認網路狀態後再試");
+            break;
           case "auth/wrong-password":
             alert("密碼錯誤");
             break;
@@ -41,18 +46,17 @@ export default function LoginPage() {
             alert("使用者不存在");
             break;
           case "auth/invalid-password":
-            alert("Password must be at least 6 characters");
+            alert("密碼至少 6 個字元");
             break;
           case "auth/invalid-email":
-            return "Email provided is invalid";
-
-          // Many more authCode mapping here...
-
+            alert("信箱格式不正確");
+            break;
           default:
             alert(error.message);
             return "";
         }
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -62,6 +66,7 @@ export default function LoginPage() {
         register={register}
         errors={errors}
         isValid={isValid}
+        isLoading={isLoading}
         onSubmit={handleSubmit(onSubmit)}
       />
     </StyledPage>

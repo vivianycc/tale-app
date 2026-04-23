@@ -17,6 +17,7 @@ export default function SignUpPage() {
   const { signup, user } = useAuth();
   const { firestore } = getFirebase();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -31,6 +32,7 @@ export default function SignUpPage() {
 
   const onSubmit = (data) => {
     const { email, password } = data;
+    setIsLoading(true);
     signup(email, password)
       .then((user) =>
         setDoc(doc(firestore, "users", user.uid), {
@@ -40,23 +42,24 @@ export default function SignUpPage() {
       .then(() => navigate("/pets/create"))
       .catch((error) => {
         switch (error.code) {
+          case "auth/network-request-failed":
+            alert("網路連線失敗，請確認網路狀態後再試");
+            break;
           case "auth/invalid-password":
             alert("密碼至少 6 個字元");
             break;
           case "auth/invalid-email":
             alert("信箱格式不正確");
             break;
-
           case "auth/email-already-in-use":
             alert("信箱已有人使用");
             break;
-          // Many more authCode mapping here...
-
           default:
             alert(error.message);
             return "";
         }
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -66,6 +69,7 @@ export default function SignUpPage() {
         register={register}
         errors={errors}
         isValid={isValid}
+        isLoading={isLoading}
         onSubmit={handleSubmit(onSubmit)}
       />
     </StyledPage>

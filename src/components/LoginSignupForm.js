@@ -32,6 +32,7 @@ export default function LoginSignupForm({
   register,
   errors,
   isValid,
+  isLoading = false,
 }) {
   // console.log("email ref", emailRef);
   const emailPattern =
@@ -67,8 +68,8 @@ export default function LoginSignupForm({
 
       <Button
         type="submit"
-        variant={isValid ? "primary" : "disabled"}
-        label={formType === "login" ? "登入" : "建立帳號"}
+        variant={isValid && !isLoading ? "primary" : "disabled"}
+        label={isLoading ? "處理中..." : formType === "login" ? "登入" : "建立帳號"}
       />
       {formType === "login" ? (
         <p>

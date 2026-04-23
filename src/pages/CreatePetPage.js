@@ -102,20 +102,23 @@ const Step1 = ({ handleChange, formData: { sex, birthday } }) => {
   );
 };
 
-const Step2 = ({ handleFile, uploadFile, photoUrl }) => {
-  console.log("check", photoUrl);
+const Step2 = ({ handleFile, photoUrl, uploadProgress }) => {
+  const uploading = typeof uploadProgress === "number";
+  const uploadFailed = uploadProgress === "error";
+
   return (
     <>
-      <input type="file" onChange={(e) => handleFile(e)} />
+      <input type="file" accept="image/*" onChange={(e) => handleFile(e)} />
       <div
         className="upload-avatar"
         style={{
           backgroundImage: `url(${photoUrl})`,
           backgroundSize: "contain",
         }}
-      >
-        upload photo
-      </div>
+      />
+      {uploading && <p style={{ fontSize: 14, color: "var(--neutral-500)" }}>上傳中... {uploadProgress}%</p>}
+      {uploadFailed && <p style={{ fontSize: 14, color: "#e00" }}>上傳失敗，可跳過或重新選擇照片</p>}
+      {uploadProgress === "done" && <p style={{ fontSize: 14, color: "var(--neutral-500)" }}>上傳完成</p>}
     </>
   );
 };
@@ -133,6 +136,7 @@ export default function CreateFirstPetPage() {
     photoUrl: "",
   });
   const [file, setFile] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   const [step, setStep] = useState(0);
 
@@ -166,8 +170,9 @@ export default function CreateFirstPetPage() {
   useEffect(() => {
     if (file) {
       const path = `${user.uid}/${form.name}/profile`;
-      const setUrl = (url) => setForm({ ...form, photoUrl: url });
-      uploadFile(file, path, setUrl);
+      const setUrl = (url) => setForm((prev) => ({ ...prev, photoUrl: url }));
+      setUploadProgress(0);
+      uploadFile(file, path, setUrl, setUploadProgress);
     }
   }, [file]);
 
@@ -176,8 +181,8 @@ export default function CreateFirstPetPage() {
     <Step1 formData={form} handleChange={handleChange} />,
     <Step2
       handleFile={handleFile}
-      uploadFile={uploadFile}
       photoUrl={form.photoUrl}
+      uploadProgress={uploadProgress}
     />,
     <LastStep />,
   ];
@@ -196,7 +201,12 @@ export default function CreateFirstPetPage() {
         {step === lastStep && (
           <Button label="開始使用" onClick={() => navigate("/")} />
         )}
-        {step === formCompleted && <Button label="送出" type="submit" />}
+        {step === formCompleted && (
+          <>
+            <Button label="送出" type="submit" />
+            <Button label="跳過" variant="secondary" onClick={() => { createPet(form); goToNextStep(); }} />
+          </>
+        )}
         {step < formCompleted && (
           <Button label="下一步" onClick={goToNextStep} />
         )}

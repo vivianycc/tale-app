@@ -3,7 +3,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const { storage } = getFirebase();
 
-export default function uploadFile(file, path, setUrl) {
+export default function uploadFile(file, path, setUrl, onProgress) {
   let fileExt = file.type.substring(
     file.type.lastIndexOf("/") + 1,
     file.type.length
@@ -18,14 +18,15 @@ export default function uploadFile(file, path, setUrl) {
       const progress = Math.round(
         (snapshot.bytesTransferred / snapshot.totalBytes) * 100
       );
-      console.log(progress);
+      if (onProgress) onProgress(progress);
     },
     (error) => {
-      alert(error);
+      if (onProgress) onProgress("error");
     },
     () => {
       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
         setUrl(downloadURL);
+        if (onProgress) onProgress("done");
       });
     }
   );
