@@ -121,24 +121,48 @@ function App() {
               <Route path="profile" element={<ProfilePage />} />
             </Route>
 
-            <Route path="foods/create" element={<CreateFoodPage />} />
+            <Route
+              path="foods/create"
+              element={
+                <RequireAuth>
+                  <CreateFoodPage />
+                </RequireAuth>
+              }
+            />
             <Route
               path="foods/records/add"
               element={
-                <AddFoodRecordPage
-                  diaries={diaries}
-                  addfoodRecordHandler={setDiaries}
-                />
+                <RequireAuth>
+                  <AddFoodRecordPage
+                    diaries={diaries}
+                    addfoodRecordHandler={setDiaries}
+                  />
+                </RequireAuth>
               }
             />
-            <Route path="diaries/note/add" element={<AddNotePage />} />
+            <Route
+              path="diaries/note/add"
+              element={
+                <RequireAuth>
+                  <AddNotePage />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/foods/add"
-              element={<AddFoodPage foods={foods} addFoodHandler={setFoods} />}
+              element={
+                <RequireAuth>
+                  <AddFoodPage foods={foods} addFoodHandler={setFoods} />
+                </RequireAuth>
+              }
             />
             <Route
               path="foods/search"
-              element={<SearchFoodPage foods={foods} />}
+              element={
+                <RequireAuth>
+                  <SearchFoodPage foods={foods} />
+                </RequireAuth>
+              }
             />
             <Route path="login" element={<LoginPage />} />
             <Route path="signup" element={<SignupPage />} />

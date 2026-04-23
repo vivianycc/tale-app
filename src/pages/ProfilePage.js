@@ -12,33 +12,6 @@ const StyledPage = styled.div`
   margin-top: 56px;
   position: relative;
   flex: 1;
-  .user-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin: 40px 0 16px;
-    padding: 40px 24px;
-    position: relative;
-    background-color: #fff;
-    border-radius: 24px;
-  }
-  .user-avatar {
-    height: 72px;
-    width: 72px;
-    border-radius: 100%;
-    background-color: var(--neutral-300);
-    position: absolute;
-    top: -36px;
-  }
-  .name {
-    font-size: 18px;
-    color: var(--neutral-700);
-  }
-  .email {
-    font-size: 14px;
-    color: var(--neutral-500);
-  }
   .pet-header {
     display: flex;
     align-items: center;
@@ -95,12 +68,6 @@ export default function ProfilePage() {
 
   return (
     <StyledPage>
-      <div className="user-info">
-        <div className="user-avatar"></div>
-        <h1 className="name">{user.displayName || user.email.split("@")[0]}</h1>
-        <p className="email">{user.email}</p>
-      </div>
-
       <div className="pet-header">
         <h2>我的寵物</h2>
         <Button

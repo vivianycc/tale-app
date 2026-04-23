@@ -3,7 +3,15 @@ import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-tw";
-import { Calendar, Heart, Image, BookOpen, TrendingUp } from "react-feather";
+import {
+  Calendar,
+  Heart,
+  Image,
+  BookOpen,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+} from "react-feather";
 import { Modal, Drawer } from "@geist-ui/core";
 import CalendarView from "../components/Calendar";
 import IconButton from "../components/IconButton";
@@ -23,10 +31,21 @@ const StyledPage = styled.div`
   .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: start;
 
     h1 {
       letter-spacing: 2px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+    }
+    .day-stepper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
   }
   .content {
@@ -82,7 +101,7 @@ export default function DiaryPage(props) {
       "pets",
       currentPet,
       "diaries",
-      selectedDay
+      selectedDay,
     );
 
     const unsubscribe = onSnapshot(diaryCol, (doc) => {
@@ -132,11 +151,35 @@ export default function DiaryPage(props) {
       </Modal>
       <div className="header">
         <h1>{`${dayjs(selectedDay).locale("zh-tw").format("MMMD")}日`}</h1>
-        <IconButton
-          icon={<Calendar />}
-          variant="secondary"
-          onClick={() => setShowModal(true)}
-        />
+        <div className="header-actions">
+          <div className="day-stepper">
+            <IconButton
+              icon={<ChevronLeft size={18} />}
+              variant="transparent"
+              size="32"
+              onClick={() =>
+                setSelectedDay(
+                  dayjs(selectedDay).subtract(1, "day").format("YYYY-MM-DD"),
+                )
+              }
+            />
+            <IconButton
+              icon={<ChevronRight size={18} />}
+              variant="transparent"
+              size="32"
+              onClick={() =>
+                setSelectedDay(
+                  dayjs(selectedDay).add(1, "day").format("YYYY-MM-DD"),
+                )
+              }
+            />
+          </div>
+          <IconButton
+            icon={<Calendar />}
+            variant="secondary"
+            onClick={() => setShowModal(true)}
+          />
+        </div>
       </div>
       <div className="content">
         {selectedDayData == null || Object.keys(selectedDayData).length === 0

@@ -21,6 +21,7 @@ export default function uploadFile(file, path, setUrl, onProgress) {
       if (onProgress) onProgress(progress);
     },
     (error) => {
+      console.error("uploadFile error:", error);
       if (onProgress) onProgress("error");
     },
     () => {

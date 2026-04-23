@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Textarea from "../components/Textarea";
@@ -29,11 +29,16 @@ const StyledPage = styled.div`
 
 export default function AddNotePage() {
   const { state } = useLocation();
-  const { currentPet, date, note: prevNote } = state;
+  const { currentPet, date, note: prevNote } = state || {};
   const [note, setNote] = useState(prevNote || "");
   const navigate = useNavigate();
   const { firestore } = getFirebase();
   const { user } = useAuth();
+
+  if (!state) {
+    return <Navigate to="/" replace />;
+  }
+
   const docRef = doc(
     firestore,
     "users",

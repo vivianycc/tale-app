@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { getFirebase } from "../firebase";
@@ -52,9 +52,14 @@ export default function AddFoodRecordPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { brand, product, flavor, calories, id, currentPet, date } =
-    location.state;
+    location.state || {};
   const { firestore } = getFirebase();
   const { user } = useAuth();
+
+  if (!location.state) {
+    return <Navigate to="/" replace />;
+  }
+
   const diaryDoc = doc(
     firestore,
     "users",

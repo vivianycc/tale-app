@@ -2,7 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import { Input } from "@geist-ui/core";
 import { Search, ArrowLeft } from "react-feather";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation, Navigate } from "react-router-dom";
 import SearchResultItem from "../components/SearchResultItem";
 import IconButton from "../components/IconButton";
 import { getFirebase } from "../firebase";
@@ -34,9 +34,8 @@ export default function FoodSearch(props) {
   const [foodAdded, setFoodAdded] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const {
-    state: { currentPet, date, from },
-  } = useLocation();
+  const location = useLocation();
+  const { currentPet, date, from } = location.state || {};
 
   useEffect(() => {
     const foodsRef = collection(firestore, "foods");
@@ -73,7 +72,7 @@ export default function FoodSearch(props) {
       };
       getAddedFood();
     }
-  }, [user]);
+  }, [user, currentPet]);
 
   const renderResultItem = (food) => {
     if (from === "foods") {
@@ -111,6 +110,9 @@ export default function FoodSearch(props) {
     }
   };
 
+  if (!location.state) {
+    return <Navigate to="/foods" replace />;
+  }
   if (user == null) {
     return <div>Loading...</div>;
   }
@@ -137,18 +139,12 @@ export default function FoodSearch(props) {
       </div>
 
       <div className="results">
-        {foodData
-          .filter((food) => {
-            if (searchParams === "") {
-              return null;
-            } else if (
+        {(searchParams === ""
+          ? foodData.slice(0, 10)
+          : foodData.filter((food) =>
               food.brand.toLowerCase().includes(searchParams.toLowerCase())
-            ) {
-              return food;
-            }
-            // return food;
-          })
-          .map(renderResultItem)}
+            )
+        ).map(renderResultItem)}
       </div>
     </StyledFoodSearch>
   );

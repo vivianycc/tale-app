@@ -6,6 +6,8 @@ import { useAuth } from "../hooks/useAuth";
 import Input from "../components/Input";
 import RadioButton from "../components/RadioButton";
 import Button from "../components/Button";
+import FileInputButton from "../components/FileInputButton";
+import PhotoCropper from "../components/PhotoCropper";
 import uploadFile from "./uploadFile";
 
 const StyledPage = styled.div`
@@ -108,13 +110,16 @@ const Step2 = ({ handleFile, photoUrl, uploadProgress }) => {
 
   return (
     <>
-      <input type="file" accept="image/*" onChange={(e) => handleFile(e)} />
       <div
         className="upload-avatar"
         style={{
           backgroundImage: `url(${photoUrl})`,
           backgroundSize: "contain",
         }}
+      />
+      <FileInputButton
+        label={photoUrl ? "更換照片" : "上傳照片"}
+        onChange={handleFile}
       />
       {uploading && <p style={{ fontSize: 14, color: "var(--neutral-500)" }}>上傳中... {uploadProgress}%</p>}
       {uploadFailed && <p style={{ fontSize: 14, color: "#e00" }}>上傳失敗，可跳過或重新選擇照片</p>}
@@ -137,6 +142,7 @@ export default function CreateFirstPetPage() {
   });
   const [file, setFile] = useState("");
   const [uploadProgress, setUploadProgress] = useState(null);
+  const [rawImageSrc, setRawImageSrc] = useState(null);
 
   const [step, setStep] = useState(0);
 
@@ -158,7 +164,12 @@ export default function CreateFirstPetPage() {
   };
 
   const handleFile = (e) => {
-    setFile(e.target.files[0]);
+    const picked = e.target.files[0];
+    if (!picked) return;
+    const reader = new FileReader();
+    reader.onload = () => setRawImageSrc(reader.result);
+    reader.readAsDataURL(picked);
+    e.target.value = "";
   };
 
   const handleSubmit = (e) => {
@@ -211,6 +222,16 @@ export default function CreateFirstPetPage() {
           <Button label="下一步" onClick={goToNextStep} />
         )}
       </form>
+      {rawImageSrc && (
+        <PhotoCropper
+          imageSrc={rawImageSrc}
+          onCancel={() => setRawImageSrc(null)}
+          onConfirm={(blob) => {
+            setRawImageSrc(null);
+            setFile(blob);
+          }}
+        />
+      )}
     </StyledPage>
   );
 }

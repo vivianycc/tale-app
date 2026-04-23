@@ -34,6 +34,7 @@ const StyledNav = styled.nav`
     border-radius: 1000px;
     color: var(--neutral-700);
     text-decoration: none;
+    white-space: nowrap;
   }
   a:hover {
     background-color: var(--neutral-300);

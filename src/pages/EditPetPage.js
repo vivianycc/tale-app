@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { getFirebase } from "../firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { ref, uploadBytesResumable } from "firebase/storage";
@@ -8,7 +8,9 @@ import { useAuth } from "../hooks/useAuth";
 import RadioButton from "../components/RadioButton";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import FileInputButton from "../components/FileInputButton";
 import uploadFile from "./uploadFile";
+import PhotoCropper from "../components/PhotoCropper";
 import { useEffect } from "react";
 
 const StyledPage = styled.div`
@@ -19,6 +21,12 @@ const StyledPage = styled.div`
     gap: 24px;
   }
 
+  .photo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
   .avatar {
     height: 72px;
     width: 72px;
@@ -30,21 +38,22 @@ const StyledPage = styled.div`
 `;
 
 export default function CreatePetPage() {
-  const {
-    state: { pet },
-  } = useLocation();
+  const location = useLocation();
+  const pet = location.state?.pet;
   const [form, setForm] = useState({
-    photoUrl: pet.photoUrl || "",
-    name: pet.name || "",
-    species: pet.species || "",
-    breed: pet.breed || "",
-    birthday: pet.birthday || "",
-    neutered: pet.neutered || "",
-    chipNumber: pet.chipNumber || "",
-    sex: pet.sex || "",
+    photoUrl: pet?.photoUrl || "",
+    name: pet?.name || "",
+    species: pet?.species || "",
+    breed: pet?.breed || "",
+    birthday: pet?.birthday || "",
+    neutered: pet?.neutered || "",
+    chipNumber: pet?.chipNumber || "",
+    sex: pet?.sex || "",
   });
 
   const [file, setFile] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [rawImageSrc, setRawImageSrc] = useState(null);
 
   const navigate = useNavigate();
 
@@ -57,19 +66,23 @@ export default function CreatePetPage() {
   };
 
   const handleFile = (e) => {
-    console.log(e.target.files[0]);
-    setFile(e.target.files[0]);
+    const picked = e.target.files[0];
+    if (!picked) return;
+    const reader = new FileReader();
+    reader.onload = () => setRawImageSrc(reader.result);
+    reader.readAsDataURL(picked);
+    e.target.value = "";
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const createPet = async (data) => {
-      const petRef = doc(firestore, "users", user.uid, "pets", form.name);
-      setDoc(petRef, data, { merge: true });
+    const updatePet = async (data) => {
+      const petRef = doc(firestore, "users", user.uid, "pets", pet.name);
+      setDoc(petRef, { ...data, name: pet.name }, { merge: true });
     };
 
-    createPet(form);
+    updatePet(form);
     navigate("/profile");
   };
   const handleCancel = () => {
@@ -77,31 +90,48 @@ export default function CreatePetPage() {
   };
 
   useEffect(() => {
-    const setPhotoUrl = (url) => setForm({ ...form, photoUrl: url });
-    if (file) {
-      uploadFile(file, `${user.uid}/${form.name}/profile`, setPhotoUrl);
+    if (file && user) {
+      const setPhotoUrl = (url) => setForm((prev) => ({ ...prev, photoUrl: url }));
+      setUploadProgress(0);
+      uploadFile(file, `${user.uid}/${form.name}/profile`, setPhotoUrl, setUploadProgress);
     }
   }, [file]);
+
+  if (!pet) {
+    return <Navigate to="/profile" replace />;
+  }
 
   const { name, breed, species, birthday, neutered, chipNumber, sex } = form;
   return (
     <StyledPage>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="photo-row">
           <div
             className="avatar"
             style={{ backgroundImage: `url(${form.photoUrl})` }}
           ></div>
-          <input type="file" accept="image/*" onChange={(e) => handleFile(e)} />
+          <FileInputButton
+            label={form.photoUrl ? "更換照片" : "上傳照片"}
+            onChange={handleFile}
+          />
+          {typeof uploadProgress === "number" && (
+            <p style={{ fontSize: 14, color: "var(--neutral-500)" }}>上傳中... {uploadProgress}%</p>
+          )}
+          {uploadProgress === "error" && (
+            <p style={{ fontSize: 14, color: "#e00" }}>上傳失敗，可重新選擇照片</p>
+          )}
+          {uploadProgress === "done" && (
+            <p style={{ fontSize: 14, color: "var(--neutral-500)" }}>上傳完成</p>
+          )}
         </div>
 
         <Input
           label="名字"
           name="name"
           value={name}
-          onChange={handleInput}
           placeholder="請輸入名字"
-          required
+          readOnly
+          disabled
         />
         <RadioButton.Group>
           <RadioButton
@@ -188,6 +218,16 @@ export default function CreatePetPage() {
         <Button label="送出" type="submit" />
         <Button label="取消變更" onClick={handleCancel} variant="secondary" />
       </form>
+      {rawImageSrc && (
+        <PhotoCropper
+          imageSrc={rawImageSrc}
+          onCancel={() => setRawImageSrc(null)}
+          onConfirm={(blob) => {
+            setRawImageSrc(null);
+            setFile(blob);
+          }}
+        />
+      )}
     </StyledPage>
   );
 }

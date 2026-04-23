@@ -9,7 +9,13 @@ import { useAuth } from "../hooks/useAuth";
 import Nav from "../components/Nav";
 import FoodItem from "../components/FoodItem";
 import ActionButton from "../components/ActionButton";
-import FoodNutrition from "../components/FoodNutrition";
+import {
+  NutritionChartCard,
+  BasicInfoCard,
+  IngredientCard,
+  AdditivesCard,
+  OtherElementsCard,
+} from "../components/FoodNutrition";
 import Button from "../components/Button";
 
 const StyledFoodPage = styled.div`
@@ -34,6 +40,57 @@ const StyledFoodPage = styled.div`
     .icon-box {
       pointer-events: none;
     }
+  }
+`;
+
+const ModalGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+`;
+
+const MyReviewCard = styled.div`
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .section-title {
+    font-size: 13px;
+    color: var(--neutral-500);
+    letter-spacing: 1px;
+  }
+  .comment {
+    font-size: 14px;
+    color: var(--neutral-700);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  .comment-empty {
+    font-size: 14px;
+    color: var(--neutral-400);
+    font-style: italic;
+    margin: 0;
+  }
+  .food-rating,
+  .food-rating .icon-box {
+    pointer-events: none;
   }
 `;
 
@@ -65,7 +122,7 @@ export default function FoodPage() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [currentPet, user.uid]);
 
   const filteredFood = (foodType) => {
     console.log(foodType);
@@ -135,18 +192,35 @@ export default function FoodPage() {
       </Tabs>
 
       {selectedFood && (
-        <Modal visible={showModal} onClose={handleClose}>
+        <Modal visible={showModal} onClose={handleClose} width="min(720px, 92vw)">
           {console.log(selectedFood)}
           <Modal.Subtitle>{selectedFood.food.brand}</Modal.Subtitle>
           <Modal.Title>{selectedFood.food.flavor}</Modal.Title>
           <Modal.Content>
-            <FoodNutrition {...selectedFood.food} />
-            <p>{selectedFood.comment}</p>
-            <Rating
-              value={selectedFood.rating}
-              className="food-rating"
-              locked={true}
-            />
+            <ModalGrid>
+              <div className="col">
+                <MyReviewCard>
+                  <p className="section-title">我的評價</p>
+                  <Rating
+                    value={selectedFood.rating}
+                    className="food-rating"
+                    locked={true}
+                  />
+                  {selectedFood.comment ? (
+                    <p className="comment">{selectedFood.comment}</p>
+                  ) : (
+                    <p className="comment-empty">尚未填寫評語</p>
+                  )}
+                </MyReviewCard>
+                <IngredientCard {...selectedFood.food} />
+                {AdditivesCard(selectedFood.food)}
+              </div>
+              <div className="col">
+                {NutritionChartCard(selectedFood.food)}
+                <BasicInfoCard {...selectedFood.food} />
+                <OtherElementsCard {...selectedFood.food} />
+              </div>
+            </ModalGrid>
           </Modal.Content>
           <Button label="修改評價" onClick={() => handleEdit(selectedFood)} />
         </Modal>

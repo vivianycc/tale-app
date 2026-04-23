@@ -17,10 +17,10 @@ const geistTheme = Themes.createFromLight({
 });
 const theme = {
   colors: {
-    primary: "var(--neutral-700)",
+    primary: "var(--neutral-800)",
     onPrimary: "#fff",
-    secondary: "var(--neutral-200)",
-    onSecondary: "var(--neutral-700)",
+    secondary: "var(--neutral-300)",
+    onSecondary: "var(--neutral-800)",
     warning: "red",
   },
 };
@@ -36,5 +36,5 @@ root.render(
         </GeistProvider>
       </ThemeProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
